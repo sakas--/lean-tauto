@@ -6,7 +6,7 @@ import .tauto
 open tauto
 
 section test
-variables {A B C D E : Prop}
+variables {A B C D E F : Prop}
 
 example : true :=
 by tauto >> tactic.trace "test1 succeeded"
@@ -89,4 +89,6 @@ by tauto >> tactic.trace "test26 succeeded"
 example : ¬ ¬ (((A → B) → A) → A) :=
 by tauto >> tactic.trace "test27 succeeded"
 
+example :  (¬ A ↔ B) → (¬ (C ∨ E) ↔ D ∧ F) → (¬ (C ∨ A ∨ E) ↔ D ∧ B ∧ F) :=
+by tauto >> tactic.trace "test28 succeeded"
 end test
