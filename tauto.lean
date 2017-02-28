@@ -135,27 +135,28 @@ private meta def find_imp_imp : list expr  → tactic (expr × expr × expr × e
     | (some (_, ab, a, b, c)) := return (e, ab, a, b, c)
     end
 
-section rules
+namespace tauto
+namespace tauto_rules
 
 /- some logically equivalent rules that are used by the simplifier -/
 
 variables {A B C : Prop}
 
-lemma true_imp_iff : (true → A) ↔ A :=
+protected lemma true_imp_iff : (true → A) ↔ A :=
 begin
 apply iff.intro,
   {intro h, apply h, trivial},
   {intros h₁ h₂, apply h₁}
 end
 
-lemma and_imp_iff : A ∧ B → C ↔ A → B → C :=
+protected lemma and_imp_iff : A ∧ B → C ↔ A → B → C :=
 begin
 apply iff.intro,
   {intros h ha hb, apply h, split, exact ha, exact hb},
   {intros h₁ h₂, cases h₂ with ha hb, exact (h₁ ha hb)}
 end
 
-lemma or_imp_iff : A ∨ B → C ↔ (A → C) ∧ (B → C) :=
+protected lemma or_imp_iff : A ∨ B → C ↔ (A → C) ∧ (B → C) :=
 begin
 apply iff.intro,
   {intro h, split,
@@ -167,14 +168,15 @@ apply iff.intro,
     {apply hbc, exact hb}}
 end
 
-lemma iff_imp_iff : (A ↔ B) → C ↔ (A → B) ∧ (B → A) →  C :=
+protected lemma iff_imp_iff : (A ↔ B) → C ↔ (A → B) ∧ (B → A) →  C :=
 begin
 apply iff.intro,
   {intros h h₁, apply h, apply iff.intro, exact (and.left h₁), exact (and.right h₁)},
   {intros h h₁, apply h, cases h₁ with h₂ h₃, exact (and.intro h₂ h₃)}
 end
 
-end rules
+end tauto_rules
+end tauto
 
 /- simplifier -/
 
@@ -194,7 +196,7 @@ do
     | none        := failed
     | some (a, b) :=
       do
-        f ← to_expr `(iff.mp (@and_imp_iff %%a %%b %%c)),
+        f ← to_expr `(iff.mp (@tauto.tauto_rules.and_imp_iff %%a %%b %%c)),
         apply_to f e,
         clear e
     end
@@ -211,7 +213,7 @@ do
     | none          := failed
     | (some (a, b)) :=
       do
-        f ← to_expr `(iff.mp (@or_imp_iff %%a %%b %%c)),
+        f ← to_expr `(iff.mp (@tauto.tauto_rules.or_imp_iff %%a %%b %%c)),
         apply_to f e,
         clear e
     end
@@ -240,7 +242,7 @@ do
     | none          := failed
     | (some (a, b)) :=
       do
-        f ← to_expr `(iff.mp (@iff_imp_iff %%a %%b %%c)),
+        f ← to_expr `(iff.mp (@tauto.tauto_rules.iff_imp_iff %%a %%b %%c)),
         apply_to f e,
         clear e
     end
@@ -277,7 +279,7 @@ do ty ← infer_type e,
      if is_true a
      then
      do
-       f ← to_expr `(iff.mp (@true_imp_iff %%b)),
+       f ← to_expr `(iff.mp (@tauto.tauto_rules.true_imp_iff %%b)),
        apply_to f e,
        clear e
      else failed
